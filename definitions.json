@@ -1,0 +1,151 @@
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "users": [
+    {
+      "name": "guest",
+      "password": "guest",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "user_migration_exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "user_migration_dead_letter_exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "confirmCitizen_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "user_migration_dead_letter_exchange",
+        "x-dead-letter-routing-key": "confirmCitizen_retry_queue"
+      }
+    },
+    {
+      "name": "confirmCitizen_retry_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "user_migration_exchange",
+        "x-dead-letter-routing-key": "confirmCitizen_queue"
+      }
+    },
+    {
+      "name": "transferCitizen_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "user_migration_dead_letter_exchange",
+        "x-dead-letter-routing-key": "transferCitizen_retry_queue"
+      }
+    },
+    {
+      "name": "transferCitizen_retry_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "user_migration_exchange",
+        "x-dead-letter-routing-key": "transferCitizen_queue"
+      }
+    },
+    {
+      "name": "dead_letter_confirmCitizen_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "dead_letter_transferCitizen_queue",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "user_migration_exchange",
+      "vhost": "/",
+      "destination": "confirmCitizen_queue",
+      "destination_type": "queue",
+      "routing_key": "confirmCitizen_queue",
+      "arguments": {}
+    },
+    {
+      "source": "user_migration_exchange",
+      "vhost": "/",
+      "destination": "transferCitizen_queue",
+      "destination_type": "queue",
+      "routing_key": "transferCitizen_queue",
+      "arguments": {}
+    },
+    {
+      "source": "user_migration_dead_letter_exchange",
+      "vhost": "/",
+      "destination": "confirmCitizen_retry_queue",
+      "destination_type": "queue",
+      "routing_key": "confirmCitizen_retry_queue",
+      "arguments": {}
+    },
+    {
+      "source": "user_migration_dead_letter_exchange",
+      "vhost": "/",
+      "destination": "dead_letter_confirmCitizen_queue",
+      "destination_type": "queue",
+      "routing_key": "dead_letter_confirmCitizen_queue",
+      "arguments": {}
+    },
+    {
+      "source": "user_migration_dead_letter_exchange",
+      "vhost": "/",
+      "destination": "transferCitizen_retry_queue",
+      "destination_type": "queue",
+      "routing_key": "transferCitizen_retry_queue",
+      "arguments": {}
+    },
+    {
+      "source": "user_migration_dead_letter_exchange",
+      "vhost": "/",
+      "destination": "dead_letter_transferCitizen_queue",
+      "destination_type": "queue",
+      "routing_key": "dead_letter_transferCitizen_queue",
+      "arguments": {}
+    }
+  ]
+}
